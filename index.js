@@ -1,11 +1,9 @@
-'use strict';
-class CountUp {
+﻿class CountUp {
 
-  constructor(id, number, decimals, duration, options) {
+  constructor(id, number, decimals, separator) {
 
     document.querySelector(`#${id}`).innerHTML = '<ul class="countUp-container"></ul>'
     this.container = document.querySelector(`#${id}`).children[0]
-    this.scrollHeight = this.container.offsetHeight
     this.decimals = decimals
 
     // 补充小数位
@@ -21,9 +19,19 @@ class CountUp {
       domHTML += this.renderNumberTemplate(reverseIdx, 'int')
     })
 
+    // 参数是否需要千分位
+    if(separator) {
+      separator = typeof separator === 'string' ? separator : ','
+      Array.from({length: this.numberArr[0].length}).forEach((d, idx)=>{
+        if(idx % 3 === 0) {
+          domHTML = domHTML.replace(`<li class="countUp-int-${idx-1}">`, `<li>,</li><li class="countUp-int-${idx-1}">`)
+        }
+      })
+    }
+
     // 参数中是否有小数
     if(this.decimals > 0) {
-      domHTML += '<li>.</li>'
+      domHTML += '<li><div>.</div></li>'
       for(let i = 0; i < this.decimals; i++) {
         domHTML += this.renderNumberTemplate(i, 'decimal')
       }
@@ -36,6 +44,10 @@ class CountUp {
     this.update(number)
   }
 
+  // 兼容接口
+  setOption(data) {
+    this.update(data)
+  }
   update(newNumber) {
     const newNumberArr = newNumber.toString().split('.')
     const newIntArr = newNumberArr[0].split('')
@@ -70,14 +82,16 @@ class CountUp {
     intArr.forEach((number, idx) => {
       const reverseIdx = intArr.length - idx - 1
       const li = this.container.querySelector(`.countUp-int-${reverseIdx}`)
-      li.style.transform = `translate(0, ${-this.scrollHeight * number || 0}px)`
+      const scrollHeight = li.querySelector("div").offsetHeight
+      li.style.transform = `translate(0, ${-scrollHeight * number || 0}px)`
     })
 
     if(this.decimals > 0) {
       const decimalArr = numberArr[1].split('')
       for(let i = 0; i < this.decimals; i++) {
         const li = this.container.querySelector(`.countUp-decimal-${i}`)
-        li.style.transform = `translate(0, ${-this.scrollHeight * decimalArr[i] || 0}px)`
+        const scrollHeight = li.querySelector("div").offsetHeight
+        li.style.transform = `translate(0, ${-scrollHeight * decimalArr[i] || 0}px)`
       }
     }
   }
@@ -100,4 +114,4 @@ class CountUp {
   }
 }
 
-export default countUp
+export default CountUp
